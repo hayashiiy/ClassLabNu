@@ -25,8 +25,9 @@ namespace ClassLabNu
         public bool Ativo { get { return ativo; } set { ativo = value; } }
 
         // construtores
-        public Cliente()
+        public Cliente(int _id = 0)
         {
+            this.id = _id;
         }
 
         public Cliente(string nome, string cpf, string email)
@@ -49,5 +50,64 @@ namespace ClassLabNu
         }
 
         // métodos da classe
+        public void Inserir()
+        {
+            var cmd = Banco.Abrir();
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "sp_cliente_inserir";
+            cmd.Parameters.AddWithValue("_nome", Nome);
+            cmd.Parameters.AddWithValue("_cpf", Cpf);
+            cmd.Parameters.AddWithValue("_email", Email);
+            Id = Convert.ToInt32(cmd.ExecuteScalar());
+            cmd.Connection.Close();
+        }
+        public bool Alterar(int _id, string _nome, string _email)
+        {
+            bool resultado = false;
+            try
+            {
+                var cmd = Banco.Abrir();
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "sp_cliente_inserir";
+                cmd.Parameters.AddWithValue("_nome", nome);
+                cmd.Parameters.AddWithValue("_cpf", Cpf);
+                cmd.Parameters.AddWithValue("_email", Email);
+                Id = Convert.ToInt32(cmd.ExecuteScalar());
+                cmd.Connection.Close();
+            }
+            catch (Exception)
+            {
+
+            }
+            return resultado;
+        }
+        public static Cliente ConsultarPorId(int _id)
+        {
+            Cliente cliente = new Cliente();
+            MySqlCommand cmd = Banco.Abrir();
+            cmd.CommandType = CommandType.Text;
+            cmd.CommandText = "select * from clientes where idcli =" + _id;
+            MySqlDataReader dr = cmd.ExecuteReader();
+            while (dr.Read())
+            {
+                clientes.Add(new Cliente(
+                    dr.GetInt32(0),
+                    dr.GetString(1),
+                    dr.GetString(2),
+                    dr.GetString(3),
+                    dr.GetDateTime(4),
+                    dr.GetBoolean(5)
+                    ));
+            }
+            return clientes;
+        }
+        public void Desativar(int _id)
+        {
+            var cmd = Banco.Abrir();
+            cmd.CommandType = CommandType.Text;
+            cmd.CommandText = "update clientes set ativo = 0 where idcli = " + _id;
+            cmd.ExecuteReader();
+            cmd.Connection.Close();
+        }
     }
 }
